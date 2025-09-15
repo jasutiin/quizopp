@@ -1,6 +1,4 @@
-import Draws from './draws';
-import Wins from './wins';
-import Losses from './losses';
+import Bar from './bar';
 
 export default function GameStatsBar({
   wins,
@@ -27,10 +25,14 @@ export default function GameStatsBar({
 
   return (
     <div className="space-y-3">
-      <div className="flex h-8 rounded-full gap-1 bg-gray-200 p-1 relative">
-        <Wins winsPercentage={winsPercentage} />
-        <Draws drawsPercentage={drawsPercentage} />
-        <Losses lossesPercentage={lossesPercentage} />
+      <div className="flex h-8 rounded-full gap-1 p-1 relative">
+        <Bar percentage={winsPercentage} colour="bg-green-800" title="Wins" />
+        <Bar
+          percentage={drawsPercentage}
+          colour="bg-yellow-500"
+          title="Draws"
+        />
+        <Bar percentage={lossesPercentage} colour="bg-red-900" title="Losses" />
       </div>
     </div>
   );
