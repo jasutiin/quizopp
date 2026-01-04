@@ -8,9 +8,11 @@ import {
   createRouter,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import TanStackQueryDemo from './routes/demo/tanstack-query.tsx'
 
-import Header from './components/Header'
+import Auth from './routes/auth.tsx'
+import Matchmaking from './routes/matchmaking.$quizId.tsx'
+import Results from './routes/results.$gameId.tsx'
+import Game from './routes/game.$gameId.tsx'
 
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider.tsx'
 
@@ -22,7 +24,6 @@ import App from './App.tsx'
 const rootRoute = createRootRoute({
   component: () => (
     <>
-      <Header />
       <Outlet />
       <TanStackRouterDevtools />
     </>
@@ -35,9 +36,36 @@ const indexRoute = createRoute({
   component: App,
 })
 
+const authRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/auth',
+  component: () => <Auth />,
+})
+
+const matchmakingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/matchmaking',
+  component: () => <Matchmaking />,
+})
+
+const resultsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/results/$gameId',
+  component: () => <Results />,
+})
+
+const gameRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/game/$gameId',
+  component: () => <Game />,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  TanStackQueryDemo(rootRoute),
+  authRoute,
+  matchmakingRoute,
+  resultsRoute,
+  gameRoute,
 ])
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
