@@ -12,3 +12,77 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id        Int          @id @default(autoincrement())
+  email     String       @unique
+  password  String
+  name      String?
+  games     GamePlayer[]
+  createdAt DateTime     @default(now())
+  answers   Answer[]
+}
+
+model Quiz {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  questions   Question[]
+  games       Game[]
+  createdAt   DateTime   @default(now())
+}
+
+model Question {
+  id           Int      @id @default(autoincrement())
+  quizId       Int
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text         String
+  options      String[]
+  correctIndex Int
+  answers      Answer[]
+}
+
+model Game {
+  id                   Int          @id @default(autoincrement())
+  quizId               Int
+  quiz                 Quiz         @relation(fields: [quizId], references: [id])
+  status               GameStatus   @default(WAITING)
+  currentQuestionIndex Int?
+  players              GamePlayer[]
+  answers              Answer[]
+  createdAt            DateTime     @default(now())
+  startedAt            DateTime?
+  finishedAt           DateTime?
+}
+
+enum GameStatus {
+  WAITING
+  ACTIVE
+  FINISHED
+}
+
+model GamePlayer {
+  id     Int  @id @default(autoincrement())
+  gameId Int
+  game   Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  score  Int  @default(0)
+
+  @@unique([gameId, userId])
+}
+
+model Answer {
+  id          Int      @id @default(autoincrement())
+  gameId      Int
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  questionId  Int
+  question    Question @relation(fields: [questionId], references: [id])
+  answerIndex Int
+  isCorrect   Boolean
+  timeTaken   Int
+
+  @@unique([gameId, userId, questionId])
+}
