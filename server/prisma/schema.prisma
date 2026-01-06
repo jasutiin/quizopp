@@ -17,7 +17,7 @@ model User {
   id        Int          @id @default(autoincrement())
   email     String       @unique
   password  String
-  name      String?
+  username      String?
   games     GamePlayer[]
   createdAt DateTime     @default(now())
   answers   Answer[]

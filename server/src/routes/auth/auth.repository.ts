@@ -45,3 +45,27 @@ export const findUniqueSessionInDB = async (sessionId: string) => {
 
   return session;
 };
+
+export const addUserToDB = async (
+  username: string,
+  email: string,
+  password: string
+) => {
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password,
+      username: username,
+    },
+  });
+
+  return user;
+};
+
+export const findUserByEmail = async (email: string) => {
+  return await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+};
