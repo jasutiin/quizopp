@@ -21,6 +21,14 @@ model User {
   games     GamePlayer[]
   createdAt DateTime     @default(now())
   answers   Answer[]
+  sessions  Session[]
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  userId    Int
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
 }
 
 model Quiz {
