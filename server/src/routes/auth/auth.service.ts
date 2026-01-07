@@ -45,6 +45,7 @@ export const authorizeRequest = async (
   next: NextFunction
 ) => {
   const sessionToken = req.cookies.session;
+  console.log('authorizeRequest called for path:', req.path);
 
   if (!sessionToken) {
     return res.status(401).json({ error: 'Unauthorized: No session token' });
