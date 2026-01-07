@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { userSignUp, userLogin } from './auth.service';
 
+// @ts-ignore
+import passport from 'passport';
+
+import './auth.strategy';
+
 const router = Router();
 
 router.post('/auth/signup', async (req, res) => {
@@ -41,5 +46,15 @@ router.post('/auth/login', async (req, res) => {
     res.status(400).json({ error: message });
   }
 });
+
+router.get('/auth/google', passport.authenticate('google'));
+
+router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    successRedirect: '/',
+    failureRedirect: '/login',
+  })
+);
 
 export default router;
