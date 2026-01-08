@@ -6,7 +6,7 @@ import {
   createNewQuiz,
   updateExistingQuiz,
 } from './quizzes.service';
-import { authorizeRequest } from '../auth/auth.service';
+import { authorizeRequest } from '../auth/auth.middleware';
 import type { QuizCreateInput, QuizUpdateInput } from './quizzes.model';
 
 const router = Router();
@@ -23,9 +23,9 @@ router.get('/quizzes', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/quizzes/:id', async (req: Request, res: Response) => {
+router.get('/quizzes/:quizId', async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.quizId);
     if (isNaN(id)) {
       return res.status(400).json({ error: 'Invalid quiz ID' });
     }
@@ -63,10 +63,10 @@ router.post('/quizzes', async (req: Request, res: Response) => {
   }
 });
 
-router.patch('/quizzes/:id', async (req: Request, res: Response) => {
+router.patch('/quizzes/:quizId', async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const quizId = parseInt(req.params.quizId);
+    if (isNaN(quizId)) {
       return res.status(400).json({ error: 'Invalid quiz ID' });
     }
 
@@ -88,7 +88,7 @@ router.patch('/quizzes/:id', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Description must be a string' });
     }
 
-    const quiz = await updateExistingQuiz(id, data);
+    const quiz = await updateExistingQuiz(quizId, data);
     res.json(quiz);
   } catch (error) {
     const message =
