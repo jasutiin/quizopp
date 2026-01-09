@@ -101,3 +101,41 @@ Video I watched for implementing OAuth 2.0 authorization: https://www.youtube.co
 <br>
 
 ## Websockets
+
+```
+const app = express();
+
+...
+
+const httpServer = app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+const io = new Server(httpServer);
+
+const onConnection = (socket) => {
+  registerMatchmakingHandlers(io, socket);
+  registerGameHandlers(io, socket);
+};
+
+io.on('connection', onConnection);
+```
+
+In the above code snippet, we are initializing a new websocket server that watches for new websocket connections on our HTTP server. The `io.on('connection', onConnection)` line is called every time there is a new request for a websocket connection from a client application.
+
+```
+const registerMatchmakingHandlers = (io, socket) => {
+  const joinMatchmaking = (payload) => {
+    socket.emit('message', 'joined matchmaking');
+  };
+
+  const leaveMatchmaking = (payload) => {
+    socket.emit('message', 'left matchmaking');
+  };
+
+  socket.on('matchmaking:join', joinMatchmaking);
+  socket.on('matchmaking:leave', leaveMatchmaking);
+};
+```
+
+In the above code snippet, we have a `joinMatchmaking` function and a `leaveMatchmaking` function. Both of them emit a message of event `message`, and the actual message content like `'joined matchmaking'`. In order for the client to actually receive these messages, they have to be listening on the `message` event. Events can be named anything you want, so you could name it `game` and have the client listen on any messages from that event.
