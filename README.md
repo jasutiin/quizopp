@@ -4,7 +4,7 @@ I miss QuizUp so I made my own : )
 
 To run the server, do `cd server` (assuming you're in the root directory) then `npm run dev`. This runs the TypeScript code directly from `src/index.ts` with auto-reload enabled
 
-Everytime you make changes to the schema in `prisma/schema.prisma`, you need to run `npx prisma migrate dev` to make those changes in the database. If you want to add a name for your migration for documentation purposes, you can add `--name <value>`. The full command would then be `npx prisma migrate dev --name <value>`.
+Everytime you make changes to the schema in `prisma/schema.prisma`, you need to run `npx prisma migrate dev` to make those changes in the database. If you want to add a name for your migration for documentation purposes, you can add `--name <value>`. The full command would then be `npx prisma migrate dev --name <value>`. Then, you do `npx prisma generate` to generate the new models inside your `generated/prisma/` directory.
 
 ## Authentication
 

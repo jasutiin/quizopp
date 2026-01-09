@@ -9,6 +9,16 @@ export const userLogin = async (email: string, password: string) => {
     throw new Error('Incorrect email or password.');
   }
 
+  if (!user.password) {
+    throw new Error(
+      'This account uses OAuth login. Please use Google sign-in.'
+    );
+  }
+
+  if (!password) {
+    throw new Error('Incorrect email or password.');
+  }
+
   const validPassword = await verifyPasswordHash(user.password, password);
 
   if (!validPassword) {
@@ -28,6 +38,19 @@ export const userSignUp = async (
 ) => {
   const passwordHash = await hashPassword(password);
   const user = await addUserToDB(username, email, passwordHash);
+  const sessionToken = generateRandomSessionToken();
+  const session = await createSession(sessionToken, user.id);
+
+  return { session, sessionToken };
+};
+
+export const userOAuth = async (email: string, username: string) => {
+  var user = await findUserByEmail(email);
+
+  if (!user) {
+    user = await addUserToDB(username, email);
+  }
+
   const sessionToken = generateRandomSessionToken();
   const session = await createSession(sessionToken, user.id);
 

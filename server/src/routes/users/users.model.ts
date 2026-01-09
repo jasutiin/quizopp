@@ -2,7 +2,7 @@ import type { UserModel } from '../../../generated/prisma/models';
 
 export type UserCreateInput = {
   email: string;
-  password: string;
+  password?: string;
   username?: string;
 };
 

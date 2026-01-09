@@ -2,6 +2,7 @@
 import passport from 'passport';
 // @ts-ignore
 import { Strategy } from 'passport-google-oidc';
+import { userOAuth } from './auth.service';
 
 export default passport.use(
   new Strategy(
@@ -11,7 +12,7 @@ export default passport.use(
       callbackURL: 'http://localhost:3000/api/auth/google/callback',
       scope: ['openid', 'profile', 'email'],
     },
-    (issuer, profile, done) => {
+    async (issuer, profile, done) => {
       console.log('Google issuer:', issuer);
       console.log('Google profile:', profile);
       console.log('Profile keys:', Object.keys(profile || {}));
@@ -24,7 +25,13 @@ export default passport.use(
       if (profile && profile.emails) {
         console.log('Profile emails:', profile.emails);
       }
-      return done(null, profile);
+
+      const { session, sessionToken } = await userOAuth(
+        profile.emails,
+        profile.displayName
+      );
+
+      return done(null, { session, sessionToken });
     }
   )
 );

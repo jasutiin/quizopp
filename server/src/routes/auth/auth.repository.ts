@@ -49,7 +49,7 @@ export const findUniqueSessionInDB = async (sessionId: string) => {
 export const addUserToDB = async (
   username: string,
   email: string,
-  password: string
+  password: string | null = null
 ) => {
   const user = await prisma.user.create({
     data: {
