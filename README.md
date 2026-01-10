@@ -84,6 +84,7 @@ router.patch(
   '/users/:userId',
   authorizeProtectedEndpoint,
   async (req: Request, res: Response) => { ... }
+);
 ```
 
 To test if this actually works, you can use a tool like Postman to send a request to `/api/auth/login` which stores a cookie in the application, and then send a request to another endpoint like `/api/quizzes/1`. It should let you access a quiz. If you clear cookies in Postman and try the `/api/quizzes/1` endpoint again, you would see in the response body that you're not authorized to view the resource.
@@ -139,3 +140,21 @@ const registerMatchmakingHandlers = (io, socket) => {
 ```
 
 In the above code snippet, we have a `joinMatchmaking` function and a `leaveMatchmaking` function. Both of them emit a message of event `message`, and the actual message content like `'joined matchmaking'`. In order for the client to actually receive these messages, they have to be listening on the `message` event. Events can be named anything you want, so you could name it `game` and have the client listen on any messages from that event.
+
+That's basically how websockets work!
+
+## Matchmaking Flow
+
+![session auth diagram](./public/quizopp_matchmaking_flow.png)
+
+The client must be listening on the following websocket events:
+
+1. `matchmaking:joined`
+2. `matchmaking:waiting`
+3. `game:ready`
+4. `game:joined`
+5. `game:start`
+
+When the client joins matchmaking by emiting a `matchmaking:join` event with the quiz Id to the server, it joins a websocket room called `waitlist-{quizId}`. If there is nobody in the room, the server sends a `matchmaking:waiting` event back to the client with the quiz Id. If there is someone else in the room, the server sends a `game:ready` event to both of the clients in the room with the generated game UUID and the quiz Id. From there, the client would emit a `game:join` event back to the server with the game UUID and quiz Id it received. The server makes the client leave the waitlist at the quiz Id, join a websocket room at the game Id, and emit back to the client with a `game:joined` event with the game Id.
+
+## Game Flow
