@@ -1,5 +1,6 @@
 const MAX_QUESTIONS = 8;
-const MAX_TIME_PER_QUESTION = 10;
+const MAX_TIME_PER_QUESTION = 13; // three seconds for showing the question, 10 seconds for showing the answers
+const SHOW_QUESTIONS_TIME = MAX_TIME_PER_QUESTION - 3;
 
 export const startGame = (io, socket, payload) => {
   const { gameId, quizId } = payload;
@@ -25,6 +26,10 @@ const playQuestion = (io, gameId, time, questionIndex, questions) => {
   });
 
   const timerInterval = setInterval(() => {
+    if (timeLeft == SHOW_QUESTIONS_TIME) {
+      io.to(gameId).emit('game:showAnswers');
+    }
+
     updateTimer(io, gameId, timeLeft);
     timeLeft--;
 
