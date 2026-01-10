@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { startGame } from '../games/games.service';
 
 const registerMatchmakingHandlers = (io, socket) => {
   const joinMatchmaking = (payload) => {
@@ -35,6 +36,7 @@ const registerMatchmakingHandlers = (io, socket) => {
     const gameRoom = io.sockets.adapter.rooms.get(gameId);
     if (gameRoom && gameRoom.size >= 2) {
       io.to(gameId).emit('game:start', { gameId });
+      startGame(io, null, { gameId, quizId });
     }
   };
 
