@@ -1,24 +1,81 @@
+import { useEffect, useState } from 'react'
+import { useParams } from '@tanstack/react-router'
+import { getSocket, submitAnswer } from '@/lib/socket'
+
 export default function Game() {
-  // Mock data - replace with actual game state
+  const { gameId } = useParams({ from: '/game/$gameId' })
+  const [timeLeft, setTimeLeft] = useState(13)
+  const [currentQuestion, setCurrentQuestion] = useState('')
+  const [questionIndex, setQuestionIndex] = useState(0)
+  const [showAnswers, setShowAnswers] = useState(false)
+  const [gameFinished, setGameFinished] = useState(false)
+
+  // Mock data for players - replace with actual game state later
   const gameData = {
     players: [
       {
         name: 'You',
         avatar: 'https://via.placeholder.com/50x50?text=You',
-        score: 7,
+        score: 0,
       },
       {
         name: 'Opponent',
         avatar: 'https://via.placeholder.com/50x50?text=Opp',
-        score: 5,
+        score: 0,
       },
     ],
-    timeLeft: 30, // seconds
-    currentQuestion: 3,
-    totalQuestions: 10,
+    totalQuestions: 8,
   }
 
-  const maxScore = 10 // Assuming max score for bar height
+  const maxScore = 8
+
+  useEffect(() => {
+    const socket = getSocket()
+
+    socket.on(
+      'game:nextQuestion',
+      ({
+        question,
+        questionIndex,
+      }: {
+        question: string
+        questionIndex: number
+      }) => {
+        setCurrentQuestion(question)
+        setQuestionIndex(questionIndex)
+        setShowAnswers(false)
+      },
+    )
+
+    socket.on('game:showAnswers', () => setShowAnswers(true))
+
+    socket.on('timer:update', ({ time }: { time: number }) => setTimeLeft(time))
+
+    socket.on('game:finished', () => setGameFinished(true))
+
+    return () => {
+      socket.off('game:nextQuestion')
+      socket.off('game:showAnswers')
+      socket.off('timer:update')
+      socket.off('game:finished')
+    }
+  }, [])
+
+  const handleAnswer = (answer: string) => {
+    const userId = 'user123' // TODO: Replace with actual user ID
+    submitAnswer(gameId, questionIndex, userId, answer)
+  }
+
+  if (gameFinished) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">Game Finished!</h1>
+          <p className="text-xl">Thanks for playing!</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
@@ -54,9 +111,7 @@ export default function Game() {
 
           <div className="flex flex-col items-center mx-8">
             <div className="text-sm text-gray-400 mb-1">Time left</div>
-            <div className="text-3xl font-bold text-yellow-400">
-              {gameData.timeLeft}
-            </div>
+            <div className="text-3xl font-bold text-yellow-400">{timeLeft}</div>
           </div>
 
           <div className="flex-1 flex justify-center">
@@ -78,26 +133,30 @@ export default function Game() {
           </div>
         </div>
 
-        {/* Question Area - Placeholder */}
+        {/* Question Area */}
         <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg text-center">
           <h2 className="text-xl font-bold mb-4">
-            Question {gameData.currentQuestion}
+            Question {questionIndex + 1} of {gameData.totalQuestions}
           </h2>
-          <p className="text-lg mb-6">What is the capital of France?</p>
-          <div className="space-y-2">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-              Paris
-            </button>
-            <button className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded">
-              London
-            </button>
-            <button className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded">
-              Berlin
-            </button>
-            <button className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded">
-              Madrid
-            </button>
-          </div>
+          <p className="text-lg mb-6">
+            {currentQuestion || 'Waiting for question...'}
+          </p>
+          {showAnswers && (
+            <div className="space-y-2">
+              {['A', 'B', 'C', 'D'].map((ans) => (
+                <button
+                  key={ans}
+                  onClick={() => handleAnswer(ans)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                >
+                  {ans}
+                </button>
+              ))}
+            </div>
+          )}
+          {!showAnswers && (
+            <p className="text-gray-400">Answers will appear shortly...</p>
+          )}
         </div>
       </div>
 

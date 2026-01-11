@@ -30,13 +30,18 @@ passport.deserializeUser((user, done) => {
 });
 
 app.use(routes);
-const PORT = 3000;
+const PORT = 3001;
 
 const httpServer = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-const io = new Server(httpServer);
+const io = new Server(httpServer, {
+  cors: {
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    methods: ['GET', 'POST'],
+  },
+});
 
 const onConnection = (socket) => {
   registerMatchmakingHandlers(io, socket);

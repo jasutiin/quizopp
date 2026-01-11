@@ -44,7 +44,7 @@ const authRoute = createRoute({
 
 const matchmakingRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/matchmaking',
+  path: '/matchmaking/$quizId',
   component: () => <Matchmaking />,
 })
 
