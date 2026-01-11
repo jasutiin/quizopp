@@ -3,6 +3,9 @@ import { gameStates } from './games.service';
 const registerGameHandlers = (io, socket) => {
   const submitAnswer = (payload) => {
     const { questionIndex, userId, gameId, answer } = payload;
+    console.log(
+      `Player ${socket.id} (user ${userId}) submitted answer for question ${questionIndex} in game ${gameId}: ${answer}`
+    );
     const gameState = gameStates.get(gameId);
 
     if (!gameState) return;
@@ -15,6 +18,7 @@ const registerGameHandlers = (io, socket) => {
   };
 
   const leaveGame = (payload) => {
+    console.log(`Player ${socket.id} left game`);
     socket.emit('game', 'left game');
   };
 

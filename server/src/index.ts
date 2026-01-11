@@ -44,6 +44,7 @@ const io = new Server(httpServer, {
 });
 
 const onConnection = (socket) => {
+  console.log(`User ${socket.id} connected`);
   registerMatchmakingHandlers(io, socket);
   registerGameHandlers(io, socket);
 };

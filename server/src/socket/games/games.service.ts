@@ -11,6 +11,7 @@ export const gameStates = new Map<string, GameState>(); // this is for the whole
 
 export const startGame = (io, socket, payload) => {
   const { gameId, quizId } = payload;
+  console.log(`Starting game ${gameId} for quiz ${quizId}`);
 
   // TODO: call the database for a list of random questions from a quizId
   const questions = [
@@ -37,6 +38,8 @@ const playQuestion = (io, gameId, time, questionIndex) => {
   const gameState = gameStates.get(gameId);
   if (!gameState) return;
 
+  console.log(`Playing question ${questionIndex} in game ${gameId}`);
+
   let timeLeft = time;
 
   io.to(gameId).emit('game:nextQuestion', {
@@ -55,9 +58,15 @@ const playQuestion = (io, gameId, time, questionIndex) => {
 
     if (timeLeft < 0 || gameState.submissions[questionIndex]?.length == 2) {
       clearInterval(timerInterval); // basically stops the timer
+      if (gameState.submissions[questionIndex]?.length == 2) {
+        console.log(
+          `Both players submitted answers early for question ${questionIndex} in game ${gameId}`
+        );
+      }
       if (questionIndex < MAX_QUESTIONS - 1) {
         playQuestion(io, gameId, time, questionIndex + 1);
       } else {
+        console.log(`Game ${gameId} finished`);
         io.to(gameId).emit('game:finished');
       }
     }
