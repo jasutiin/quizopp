@@ -4,6 +4,9 @@ import cookieParser from 'cookie-parser';
 // @ts-ignore
 import passport from 'passport';
 import routes from './routes/routes';
+import { Server } from 'socket.io';
+import registerMatchmakingHandlers from './socket/matchmaking/matchmaking.handler';
+import registerGameHandlers from './socket/games/games.handler';
 
 const app = express();
 app.use(express.json());
@@ -29,8 +32,21 @@ passport.deserializeUser((user, done) => {
 app.use(routes);
 const PORT = 3000;
 
-app.listen(PORT, () => {
+const httpServer = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+const io = new Server(httpServer);
+
+const onConnection = (socket) => {
+  registerMatchmakingHandlers(io, socket);
+  registerGameHandlers(io, socket);
+};
+
+io.on('connection', onConnection);
+
+io.on('disconnect', (socket) => {
+  console.log('A user disconnected');
 });
 
 app.get('/', (req, res) => {
