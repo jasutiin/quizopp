@@ -1,6 +1,17 @@
+import { gameStates } from './games.service';
+
 const registerGameHandlers = (io, socket) => {
   const submitAnswer = (payload) => {
-    socket.emit('game', 'submitted answer');
+    const { questionIndex, userId, gameId, answer } = payload;
+    const gameState = gameStates.get(gameId);
+
+    if (!gameState) return;
+
+    if (!gameState.submissions[questionIndex]) {
+      gameState.submissions[questionIndex] = [];
+    }
+
+    gameState.submissions[questionIndex].push(answer);
   };
 
   const leaveGame = (payload) => {

@@ -2,8 +2,17 @@ const MAX_QUESTIONS = 8;
 const MAX_TIME_PER_QUESTION = 13; // three seconds for showing the question, 10 seconds for showing the answers
 const SHOW_QUESTIONS_TIME = MAX_TIME_PER_QUESTION - 3;
 
+interface GameState {
+  submissions: Record<number, string[]>; // question index, a list of answers
+  questions: string[];
+}
+
+export const gameStates = new Map<string, GameState>(); // this is for the whole server across all sessions, key: gameId
+
 export const startGame = (io, socket, payload) => {
   const { gameId, quizId } = payload;
+
+  // TODO: call the database for a list of random questions from a quizId
   const questions = [
     'question1',
     'question2',
@@ -15,16 +24,27 @@ export const startGame = (io, socket, payload) => {
     'question8',
   ];
 
-  playQuestion(io, gameId, MAX_TIME_PER_QUESTION, 0, questions);
+  const gameState: GameState = {
+    submissions: {},
+    questions,
+  };
+
+  gameStates.set(gameId, gameState);
+  playQuestion(io, gameId, MAX_TIME_PER_QUESTION, 0);
 };
 
-const playQuestion = (io, gameId, time, questionIndex, questions) => {
+const playQuestion = (io, gameId, time, questionIndex) => {
+  const gameState = gameStates.get(gameId);
+  if (!gameState) return;
+
   let timeLeft = time;
 
   io.to(gameId).emit('game:nextQuestion', {
-    question: questions[questionIndex],
+    question: gameState.questions[questionIndex],
+    questionIndex,
   });
 
+  // set a timer interval that calls itself every second
   const timerInterval = setInterval(() => {
     if (timeLeft == SHOW_QUESTIONS_TIME) {
       io.to(gameId).emit('game:showAnswers');
@@ -33,10 +53,12 @@ const playQuestion = (io, gameId, time, questionIndex, questions) => {
     updateTimer(io, gameId, timeLeft);
     timeLeft--;
 
-    if (timeLeft < 0) {
-      clearInterval(timerInterval);
+    if (timeLeft < 0 || gameState.submissions[questionIndex]?.length == 2) {
+      clearInterval(timerInterval); // basically stops the timer
       if (questionIndex < MAX_QUESTIONS - 1) {
-        playQuestion(io, gameId, time, questionIndex + 1, questions);
+        playQuestion(io, gameId, time, questionIndex + 1);
+      } else {
+        io.to(gameId).emit('game:finished');
       }
     }
   }, 1000);
